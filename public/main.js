@@ -1308,8 +1308,9 @@ async function getChat() {
                 console.log("HC: Load lorebook...");
                 {
                     lorebook_plain_text = chat[0]['lorebook'];
-                    if (!isJSON(lorebook_plain_text))
-                        lorebook_plain_text = JSON.stringify(LOREBOOK_DEFAULT, null, 2)
+                    // Fix: Do not overwrite user contents.
+                    // if (!isJSON(lorebook_plain_text))
+                    //     lorebook_plain_text = JSON.stringify(LOREBOOK_DEFAULT, null, 2)
                     $('#lorebook_textarea').val(lorebook_plain_text);
                 }
                 chat.shift();
