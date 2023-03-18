@@ -155,6 +155,28 @@ const AUTHORS_NOTE_INSTER_ORDER = 0; // 0 is last.
 const formatAuthorsNote = (note) => `[${note}]`; // `[Author's Note: ${note}]`;
 var authors_note = "";
 
+/**
+ * @typedef {Object} Lorebook
+ * @property {Lorebook_Entry[]} entries
+*/
+/**
+ * @typedef {Object} Lorebook_Entry
+ * @property {String[]} keys
+ * @property {String} text
+*/
+
+/** @type {Lorebook} */
+const LOREBOOK_DEFAULT = { entries: [{ keys: [""], text: "" }] };
+let lorebook_plain_text = "";
+
+function isJSON(str) {
+    try {
+        return (JSON.parse(str) && !!str);
+    } catch (e) {
+        return false;
+    }
+}
+
 //css
 var bg1_toggle = true;
 var css_mes_bg = $('<div class="mes"></div>').css('background');
@@ -1236,6 +1258,7 @@ async function saveChat() {
     var save_chat = [{ user_name: default_user_name, character_name: name2, create_date: chat_create_date }, ...chat];
     save_chat[0].memory = memory_prompt;
     save_chat[0].authors_note = authors_note;
+    save_chat[0].lorebook = lorebook_plain_text;
 
     jQuery.ajax({
         type: 'POST',
@@ -1282,6 +1305,13 @@ async function getChat() {
                 $('#memory_textarea').val(memory_prompt = chat[0]['memory']);
                 console.log("HC: Load author's note...");
                 $('#authors_note_textarea').val(authors_note = chat[0]['authors_note']);
+                console.log("HC: Load lorebook...");
+                {
+                    lorebook_plain_text = chat[0]['lorebook'];
+                    if (!isJSON(lorebook_plain_text))
+                        lorebook_plain_text = JSON.stringify(LOREBOOK_DEFAULT, null, 2)
+                    $('#lorebook_textarea').val(lorebook_plain_text);
+                }
                 chat.shift();
 
             } else {
@@ -1290,6 +1320,8 @@ async function getChat() {
                 $('#memory_textarea').val(memory_prompt = "");
                 console.log("HC: Reset author's note...");
                 $('#authors_note_textarea').val(authors_note = "");
+                console.log("HC: Reset lorebook...");
+                $('#lorebook_textarea').val(lorebook_plain_text = JSON.stringify(LOREBOOK_DEFAULT, null, 2));
             }
             //console.log(chat);
             getChatResult();
@@ -1303,6 +1335,8 @@ async function getChat() {
             $('#memory_textarea').val(memory_prompt = "");
             console.log("HC: Reset author's note...");
             $('#authors_note_textarea').val(authors_note = "");
+            console.log("HC: Reset lorebook...");
+            $('#lorebook_textarea').val(lorebook_plain_text = JSON.stringify(LOREBOOK_DEFAULT, null, 2));
         }
     });
 }
@@ -2028,6 +2062,13 @@ $('#authors_note_textarea').on('keyup paste cut', function () {
     authors_note = $('#authors_note_textarea').val();
     saveChat();
 });
+// Save lorebook to chatData when edited.
+$('#lorebook_textarea').on('keyup paste cut', function () {
+    console.log("HC: Save Lorebook...");
+    lorebook_plain_text = $('#lorebook_textarea').val();
+    saveChat();
+});
+
 $("#api_button").click(function () {
     if ($('#api_url_text').val() != '') {
         $("#api_loading").css("display", 'inline-block');
